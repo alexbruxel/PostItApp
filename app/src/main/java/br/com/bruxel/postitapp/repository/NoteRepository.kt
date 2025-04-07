@@ -6,9 +6,14 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class NoteRepository @Inject constructor(private val noteDao: NoteDao) {
-    val allNotes: Flow<List<Note>> = noteDao.getAllNotes()
+    val activeNotes: Flow<List<Note>> = noteDao.getActiveNotes()
+    val archivedNotes: Flow<List<Note>> = noteDao.getArchivedNotes()
 
     suspend fun insert(note: Note) {
         noteDao.insert(note)
+    }
+
+    suspend fun setArchived(noteId: Int, isArchived: Boolean) {
+        noteDao.setNoteArchived(noteId, isArchived)
     }
 }

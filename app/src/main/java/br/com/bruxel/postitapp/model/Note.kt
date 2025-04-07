@@ -11,5 +11,6 @@ data class Note(
     val color: String,
     val category: String,
     val isPinned: Boolean = false,
+    val isArchived: Boolean = false,
     val timestamp: Long
 )

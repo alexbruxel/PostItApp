@@ -2,10 +2,6 @@ package br.com.bruxel.postitapp.ui
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -17,12 +13,11 @@ import br.com.bruxel.postitapp.viewmodel.NoteViewModel
 
 @Composable
 fun NoteScreen(viewModel: NoteViewModel = ViewModelProvider(LocalContext.current as ComponentActivity)[NoteViewModel::class.java]) {
-    val notes by viewModel.allNotes.collectAsState(initial = emptyList())
-    val archivedNotes = remember { mutableStateListOf<Int>() }
+    val activeNotes by viewModel.activeNotes.collectAsState(initial = emptyList())
+    val archivedNotes by viewModel.archivedNotes.collectAsState(initial = emptyList())
+    var selectedTab by remember { mutableIntStateOf(0) }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
 
         Button(onClick = {
             viewModel.addNote(
@@ -38,45 +33,20 @@ fun NoteScreen(viewModel: NoteViewModel = ViewModelProvider(LocalContext.current
             Text("Adicionar Nota")
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        LazyColumn {
-            items(notes) { note ->
-                val isArchived = archivedNotes.contains(note.id)
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    elevation = CardDefaults.cardElevation(4.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(text = note.title, style = MaterialTheme.typography.titleLarge)
-                            Text(text = note.content, style = MaterialTheme.typography.bodyMedium)
-                            Text(text = note.id.toString(), style = MaterialTheme.typography.bodyMedium)
-                        }
-
-                        IconButton(onClick = {
-                            if (isArchived) {
-                                archivedNotes.remove(note.id)
-                            } else {
-                                archivedNotes.add(note.id)
-                            }
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Archive,
-                                contentDescription = "Arquivar nota",
-                                tint = if (isArchived) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
+        TabRow(selectedTabIndex = selectedTab) {
+            Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }) {
+                Text("Notas Ativas", modifier = Modifier.padding(16.dp))
             }
+            Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }) {
+                Text("Arquivadas", modifier = Modifier.padding(16.dp))
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        when (selectedTab) {
+            0 -> NoteListScreen(notes = activeNotes, onToggleArchived = { viewModel.toggleArchived(it) })
+            1 -> NoteListScreen(notes = archivedNotes, onToggleArchived = { viewModel.toggleArchived(it) })
         }
     }
 }
