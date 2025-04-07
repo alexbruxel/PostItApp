@@ -27,6 +27,6 @@ class MainActivity : ComponentActivity() {
         val factory = NoteViewModelFactory(noteRepository)
 
         // Obtenha o ViewModel usando a fábrica
-        noteViewModel = ViewModelProvider(this, factory).get(NoteViewModel::class.java)
+        noteViewModel = ViewModelProvider(this, factory)[NoteViewModel::class.java]
     }
 }

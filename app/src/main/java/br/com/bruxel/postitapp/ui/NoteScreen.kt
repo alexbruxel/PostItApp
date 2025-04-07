@@ -14,7 +14,7 @@ import br.com.bruxel.postitapp.model.Note
 import br.com.bruxel.postitapp.viewmodel.NoteViewModel
 
 @Composable
-fun NoteScreen(viewModel: NoteViewModel = ViewModelProvider(LocalContext.current as ComponentActivity).get(NoteViewModel::class.java)) {
+fun NoteScreen(viewModel: NoteViewModel = ViewModelProvider(LocalContext.current as ComponentActivity)[NoteViewModel::class.java]) {
     val notes by viewModel.allNotes.collectAsState(initial = emptyList())
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Button(onClick = {
@@ -29,6 +29,7 @@ fun NoteScreen(viewModel: NoteViewModel = ViewModelProvider(LocalContext.current
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(text = note.title, style = MaterialTheme.typography.titleLarge)
                         Text(text = note.content, style = MaterialTheme.typography.bodyMedium)
+                        Text(text = note.id.toString(), style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
