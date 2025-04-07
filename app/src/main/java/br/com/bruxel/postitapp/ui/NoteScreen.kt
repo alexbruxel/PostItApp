@@ -1,10 +1,11 @@
 package br.com.bruxel.postitapp.ui
 
 import androidx.activity.ComponentActivity
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -17,9 +18,12 @@ import br.com.bruxel.postitapp.viewmodel.NoteViewModel
 @Composable
 fun NoteScreen(viewModel: NoteViewModel = ViewModelProvider(LocalContext.current as ComponentActivity)[NoteViewModel::class.java]) {
     val notes by viewModel.allNotes.collectAsState(initial = emptyList())
-    val selectedNotes = remember { mutableStateListOf<Int>() }
+    val archivedNotes = remember { mutableStateListOf<Int>() }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp)) {
+
         Button(onClick = {
             viewModel.addNote(
                 Note(
@@ -38,18 +42,11 @@ fun NoteScreen(viewModel: NoteViewModel = ViewModelProvider(LocalContext.current
 
         LazyColumn {
             items(notes) { note ->
-                val isChecked = selectedNotes.contains(note.id)
+                val isArchived = archivedNotes.contains(note.id)
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp)
-                        .clickable {
-                            if (isChecked) {
-                                selectedNotes.remove(note.id)
-                            } else {
-                                selectedNotes.add(note.id)
-                            }
-                        },
+                        .padding(8.dp),
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
                     Row(
@@ -63,16 +60,20 @@ fun NoteScreen(viewModel: NoteViewModel = ViewModelProvider(LocalContext.current
                             Text(text = note.content, style = MaterialTheme.typography.bodyMedium)
                             Text(text = note.id.toString(), style = MaterialTheme.typography.bodyMedium)
                         }
-                        Checkbox(
-                            checked = isChecked,
-                            onCheckedChange = { checked ->
-                                if (checked) {
-                                    selectedNotes.add(note.id)
-                                } else {
-                                    selectedNotes.remove(note.id)
-                                }
+
+                        IconButton(onClick = {
+                            if (isArchived) {
+                                archivedNotes.remove(note.id)
+                            } else {
+                                archivedNotes.add(note.id)
                             }
-                        )
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Archive,
+                                contentDescription = "Arquivar nota",
+                                tint = if (isArchived) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }
