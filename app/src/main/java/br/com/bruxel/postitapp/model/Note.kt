@@ -12,5 +12,6 @@ data class Note(
     val category: String,
     val isPinned: Boolean = false,
     val isArchived: Boolean = false,
+    val isDeleted: Boolean = false,
     val timestamp: Long
 )

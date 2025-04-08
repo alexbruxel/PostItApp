@@ -15,6 +15,7 @@ import br.com.bruxel.postitapp.viewmodel.NoteViewModel
 fun NoteScreen(viewModel: NoteViewModel = ViewModelProvider(LocalContext.current as ComponentActivity)[NoteViewModel::class.java]) {
     val activeNotes by viewModel.activeNotes.collectAsState(initial = emptyList())
     val archivedNotes by viewModel.archivedNotes.collectAsState(initial = emptyList())
+    val deletedNotes by viewModel.deletedNotes.collectAsState(initial = emptyList())
     var selectedTab by remember { mutableIntStateOf(0) }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
@@ -35,18 +36,22 @@ fun NoteScreen(viewModel: NoteViewModel = ViewModelProvider(LocalContext.current
 
         TabRow(selectedTabIndex = selectedTab) {
             Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }) {
-                Text("Notas Ativas", modifier = Modifier.padding(16.dp))
+                Text("Ativas", modifier = Modifier.padding(16.dp))
             }
             Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }) {
                 Text("Arquivadas", modifier = Modifier.padding(16.dp))
+            }
+            Tab(selected = selectedTab == 2, onClick = { selectedTab = 2 }) {
+                Text("Lixeira", modifier = Modifier.padding(16.dp))
             }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
         when (selectedTab) {
-            0 -> NoteListScreen(notes = activeNotes, onToggleArchived = { viewModel.toggleArchived(it) })
-            1 -> NoteListScreen(notes = archivedNotes, onToggleArchived = { viewModel.toggleArchived(it) })
+            0 -> NoteList(activeNotes, onArchive = viewModel::toggleArchive, onDelete = viewModel::deleteNote)
+            1 -> NoteList(archivedNotes, onArchive = viewModel::toggleArchive, onDelete = viewModel::deleteNote)
+            2 -> NoteList(deletedNotes, onRestore = viewModel::restoreNote)
         }
     }
 }
