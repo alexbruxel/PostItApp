@@ -49,9 +49,9 @@ fun NoteScreen(viewModel: NoteViewModel = ViewModelProvider(LocalContext.current
         Spacer(modifier = Modifier.height(8.dp))
 
         when (selectedTab) {
-            0 -> NoteList(activeNotes, onArchive = viewModel::toggleArchive, onDelete = viewModel::deleteNote)
-            1 -> NoteList(archivedNotes, onArchive = viewModel::toggleArchive, onDelete = viewModel::deleteNote)
-            2 -> NoteList(deletedNotes, onRestore = viewModel::restoreNote)
+            0 -> NoteListScreen(activeNotes, onArchive = viewModel::toggleArchive, onDelete = viewModel::deleteNote)
+            1 -> NoteListScreen(archivedNotes, onArchive = viewModel::toggleArchive, onDelete = viewModel::deleteNote)
+            2 -> NoteListScreen(deletedNotes, onRestore = viewModel::restoreNote)
         }
     }
 }

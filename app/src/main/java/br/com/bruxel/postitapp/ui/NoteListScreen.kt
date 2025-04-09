@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import br.com.bruxel.postitapp.model.Note
 
 @Composable
-fun NoteList(
+fun NoteListScreen(
     notes: List<Note>,
     onArchive: ((Note) -> Unit)? = null,
     onDelete: ((Note) -> Unit)? = null,
