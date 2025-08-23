@@ -21,11 +21,14 @@ fun NoteListScreen(
     onDelete: ((Note) -> Unit)? = null,
     onRestore: ((Note) -> Unit)? = null
 ) {
-    LazyColumn {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(top = 8.dp, bottom = 8.dp)
+    ) {
         items(notes) { note ->
             Card(
                 modifier = Modifier
-                    .padding(8.dp)
+                    .padding(vertical = 4.dp)
                     .fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(4.dp)
             ) {
