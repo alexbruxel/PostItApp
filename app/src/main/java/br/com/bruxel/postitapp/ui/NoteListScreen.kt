@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Unarchive
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import br.com.bruxel.postitapp.model.Note
 
@@ -47,12 +48,16 @@ fun NoteCard(
     onRestore: ((Note) -> Unit)? = null,
     onClick: ((Note) -> Unit)? = null
 ) {
+    val baseColor = remember(note.color) { parseHexColor(note.color) }
+    val containerColor = remember(baseColor) { baseColor.copy(alpha = 0.14f) }
+
     Card(
         modifier = Modifier
             .padding(vertical = 4.dp, horizontal = 8.dp)
             .fillMaxWidth()
             .clickable(enabled = onClick != null) { onClick?.invoke(note) },
-        elevation = CardDefaults.cardElevation(4.dp)
+        elevation = CardDefaults.cardElevation(4.dp),
+        colors = CardDefaults.cardColors(containerColor = containerColor)
     ) {
         Row(
             modifier = Modifier
@@ -88,3 +93,22 @@ fun NoteCard(
         }
     }
 }
+
+private fun parseHexColor(hex: String): Color = try {
+    val clean = hex.removePrefix("#")
+    val intVal = clean.toLong(16)
+    when (clean.length) {
+        6 -> Color(
+            red = ((intVal shr 16) and 0xFF) / 255f,
+            green = ((intVal shr 8) and 0xFF) / 255f,
+            blue = (intVal and 0xFF) / 255f
+        )
+        8 -> Color(
+            alpha = ((intVal shr 24) and 0xFF) / 255f,
+            red = ((intVal shr 16) and 0xFF) / 255f,
+            green = ((intVal shr 8) and 0xFF) / 255f,
+            blue = (intVal and 0xFF) / 255f
+        )
+        else -> Color(0xFFFFCC00)
+    }
+} catch (_: Throwable) { Color(0xFFFFCC00) }
