@@ -10,6 +10,7 @@ import androidx.navigation.navArgument
 import br.com.bruxel.postitapp.viewmodel.NoteViewModel
 import br.com.bruxel.postitapp.model.Note
 
+@Suppress("unused")
 @Composable
 fun AppNavHost() {
     val navController = rememberNavController()

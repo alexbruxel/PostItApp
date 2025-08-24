@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import br.com.bruxel.postitapp.model.Note
 import br.com.bruxel.postitapp.viewmodel.NoteViewModel
+import androidx.activity.compose.BackHandler
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,6 +52,30 @@ fun NoteEditorScreen(
         }
     }
 
+    // isDirty cobre nova nota e edição
+    val isDirty by remember(title, content, category, isPinned, colorHex, loadedNote, noteId) {
+        mutableStateOf(
+            if (noteId == null) {
+                title.isNotBlank() || content.isNotBlank() || category.isNotBlank() || isPinned || colorHex != "#FFCC00"
+            } else {
+                val ln = loadedNote
+                ln != null && (
+                    title != ln.title ||
+                        content != ln.content ||
+                        category != ln.category ||
+                        isPinned != ln.isPinned ||
+                        !colorHex.equals(ln.color, ignoreCase = true)
+                )
+            }
+        )
+    }
+
+    var showExitConfirm by remember { mutableStateOf(false) }
+
+    BackHandler(enabled = true) {
+        if (isDirty) showExitConfirm = true else onNavigateUp()
+    }
+
     val canSave = title.isNotBlank() || content.isNotBlank()
 
     Scaffold(
@@ -58,7 +83,7 @@ fun NoteEditorScreen(
             TopAppBar(
                 title = { Text(if (noteId == null) "Nova Nota" else "Editar Nota") },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
+                    IconButton(onClick = { if (isDirty) showExitConfirm = true else onNavigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
                     }
                 },
@@ -161,6 +186,24 @@ fun NoteEditorScreen(
                 Switch(checked = isPinned, onCheckedChange = { isPinned = it })
             }
         }
+    }
+
+    if (showExitConfirm) {
+        AlertDialog(
+            onDismissRequest = { showExitConfirm = false },
+            title = { Text("Descartar alterações?") },
+            text = { Text("Você possui alterações não salvas. Deseja descartar?") },
+            confirmButton = {
+                TextButton(onClick = { showExitConfirm = false; onNavigateUp() }) {
+                    Text("Descartar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExitConfirm = false }) {
+                    Text("Continuar editando")
+                }
+            }
+        )
     }
 }
 
