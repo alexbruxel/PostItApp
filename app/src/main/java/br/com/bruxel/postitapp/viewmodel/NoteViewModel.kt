@@ -7,6 +7,7 @@ import br.com.bruxel.postitapp.repository.NoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -57,4 +58,20 @@ class NoteViewModel @Inject constructor(private val repo: NoteRepository) : View
     fun saveNote(note: Note) = viewModelScope.launch {
         if (note.id == 0) repo.insert(note) else repo.update(note)
     }
+
+    val allCategories: StateFlow<List<String>> = repo.getAllNotes()
+        .map { notes ->
+            val seen = linkedMapOf<String, String>()
+            notes.forEach { n ->
+                n.categories.forEach { raw ->
+                    val t = raw.trim()
+                    if (t.isNotEmpty()) {
+                        val key = t.lowercase()
+                        if (!seen.containsKey(key)) seen[key] = t
+                    }
+                }
+            }
+            seen.values.sortedWith(String.CASE_INSENSITIVE_ORDER)
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 }

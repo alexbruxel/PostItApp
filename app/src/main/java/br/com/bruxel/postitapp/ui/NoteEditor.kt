@@ -26,6 +26,9 @@ fun NoteEditorSheet(
     }
     val loadedNote = loadedNoteState.value
 
+    // Sugestões de categorias reaproveitáveis
+    val allCategories by viewModel.allCategories.collectAsState()
+
     var initialized by remember(noteId, loadedNote) { mutableStateOf(false) }
 
     var title by rememberSaveable(noteId) { mutableStateOf("") }
@@ -34,6 +37,16 @@ fun NoteEditorSheet(
     var newCategory by rememberSaveable(noteId) { mutableStateOf("") }
     var color by rememberSaveable(noteId) { mutableStateOf("#FFCC00") }
     var isPinned by rememberSaveable(noteId) { mutableStateOf(false) }
+
+    val categorySuggestions by remember(allCategories, newCategory, selectedCategories) {
+        mutableStateOf(
+            allCategories
+                .filter { it.isNotBlank() }
+                .filter { s -> newCategory.isBlank() || s.contains(newCategory, ignoreCase = true) }
+                .filter { s -> selectedCategories.none { it.equals(s, ignoreCase = true) } }
+                .take(20)
+        )
+    }
 
     LaunchedEffect(loadedNote, noteId) {
         if (!initialized) {
@@ -98,6 +111,22 @@ fun NoteEditorSheet(
                         newCategory = ""
                     }
                 }) { Text("Adicionar") }
+            }
+            if (categorySuggestions.isNotEmpty()) {
+                Text("Sugestões", style = MaterialTheme.typography.titleSmall)
+                androidx.compose.foundation.layout.FlowRow {
+                    categorySuggestions.forEach { s ->
+                        AssistChip(
+                            onClick = {
+                                if (selectedCategories.none { it.equals(s, true) }) {
+                                    selectedCategories.add(s)
+                                }
+                            },
+                            label = { Text(s) }
+                        )
+                        Spacer(Modifier.width(8.dp))
+                    }
+                }
             }
 
             OutlinedTextField(
