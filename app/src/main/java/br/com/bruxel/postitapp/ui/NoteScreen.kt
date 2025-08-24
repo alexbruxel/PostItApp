@@ -16,18 +16,14 @@ fun NoteScreen(viewModel: NoteViewModel = hiltViewModel()) {
     val deletedNotes by viewModel.deletedNotes.collectAsState(initial = emptyList())
     var selectedTab by remember { mutableIntStateOf(0) }
 
+    var editorVisible by remember { mutableStateOf(false) }
+    var editorNoteId by remember { mutableStateOf<Int?>(null) }
+
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
 
         Button(onClick = {
-            viewModel.insertNote(
-                Note(
-                    title = "Nova Nota",
-                    content = "Conteúdo",
-                    color = "#FFCC00",
-                    category = "Trabalho",
-                    timestamp = System.currentTimeMillis()
-                )
-            )
+            editorNoteId = null // nova nota
+            editorVisible = true
         }) {
             Text("Adicionar Nota")
         }
@@ -47,9 +43,31 @@ fun NoteScreen(viewModel: NoteViewModel = hiltViewModel()) {
         Spacer(modifier = Modifier.height(8.dp))
 
         when (selectedTab) {
-            0 -> NoteListScreen(activeNotes, onArchive = viewModel::toggleArchive, onDelete = viewModel::deleteNote)
-            1 -> NoteListScreen(archivedNotes, onArchive = viewModel::toggleArchive, onDelete = viewModel::deleteNote)
-            2 -> NoteListScreen(deletedNotes, onRestore = viewModel::restoreNote)
+            0 -> NoteListScreen(
+                activeNotes,
+                onArchive = viewModel::toggleArchive,
+                onDelete = viewModel::deleteNote,
+                onNoteClick = { n -> editorNoteId = n.id; editorVisible = true }
+            )
+            1 -> NoteListScreen(
+                archivedNotes,
+                onArchive = viewModel::toggleArchive,
+                onDelete = viewModel::deleteNote,
+                onNoteClick = { n -> editorNoteId = n.id; editorVisible = true }
+            )
+            2 -> NoteListScreen(
+                deletedNotes,
+                onRestore = viewModel::restoreNote,
+                onNoteClick = { n -> editorNoteId = n.id; editorVisible = true }
+            )
         }
+    }
+
+    if (editorVisible) {
+        NoteEditorSheet(
+            noteId = editorNoteId,
+            onDismissRequest = { editorVisible = false },
+            onSaved = { editorVisible = false }
+        )
     }
 }

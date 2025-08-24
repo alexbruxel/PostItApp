@@ -1,5 +1,6 @@
 package br.com.bruxel.postitapp.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,7 +20,8 @@ fun NoteListScreen(
     notes: List<Note>,
     onArchive: ((Note) -> Unit)? = null,
     onDelete: ((Note) -> Unit)? = null,
-    onRestore: ((Note) -> Unit)? = null
+    onRestore: ((Note) -> Unit)? = null,
+    onNoteClick: ((Note) -> Unit)? = null
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -30,7 +32,8 @@ fun NoteListScreen(
                 note = note,
                 onArchive = onArchive,
                 onDelete = onDelete,
-                onRestore = onRestore
+                onRestore = onRestore,
+                onClick = onNoteClick
             )
         }
     }
@@ -41,12 +44,14 @@ fun NoteCard(
     note: Note,
     onArchive: ((Note) -> Unit)? = null,
     onDelete: ((Note) -> Unit)? = null,
-    onRestore: ((Note) -> Unit)? = null
+    onRestore: ((Note) -> Unit)? = null,
+    onClick: ((Note) -> Unit)? = null
 ) {
     Card(
         modifier = Modifier
             .padding(vertical = 4.dp, horizontal = 8.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .clickable(enabled = onClick != null) { onClick?.invoke(note) },
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Row(
