@@ -30,7 +30,8 @@ fun NoteEditorSheet(
 
     var title by rememberSaveable(noteId) { mutableStateOf("") }
     var content by rememberSaveable(noteId) { mutableStateOf("") }
-    var category by rememberSaveable(noteId) { mutableStateOf("") }
+    val selectedCategories = remember(noteId) { mutableStateListOf<String>() }
+    var newCategory by rememberSaveable(noteId) { mutableStateOf("") }
     var color by rememberSaveable(noteId) { mutableStateOf("#FFCC00") }
     var isPinned by rememberSaveable(noteId) { mutableStateOf(false) }
 
@@ -39,7 +40,7 @@ fun NoteEditorSheet(
             if (noteId != null && loadedNote != null) {
                 title = loadedNote.title
                 content = loadedNote.content
-                category = loadedNote.category
+                selectedCategories.clear(); selectedCategories.addAll(loadedNote.categories)
                 color = loadedNote.color
                 isPinned = loadedNote.isPinned
             }
@@ -71,12 +72,33 @@ fun NoteEditorSheet(
                 minLines = 3
             )
 
-            OutlinedTextField(
-                value = category,
-                onValueChange = { category = it },
-                label = { Text("Categoria") },
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Categorias (múltipla seleção)
+            Text("Categorias", style = MaterialTheme.typography.titleMedium)
+            androidx.compose.foundation.layout.FlowRow {
+                selectedCategories.forEach { c ->
+                    FilterChip(
+                        selected = true,
+                        onClick = { selectedCategories.remove(c) },
+                        label = { Text(c) }
+                    )
+                    Spacer(Modifier.width(8.dp))
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = newCategory,
+                    onValueChange = { newCategory = it },
+                    label = { Text("Nova categoria") },
+                    modifier = Modifier.weight(1f)
+                )
+                Button(enabled = newCategory.isNotBlank(), onClick = {
+                    val c = newCategory.trim()
+                    if (c.isNotEmpty() && !selectedCategories.any { it.equals(c, true) }) {
+                        selectedCategories.add(c)
+                        newCategory = ""
+                    }
+                }) { Text("Adicionar") }
+            }
 
             OutlinedTextField(
                 value = color,
@@ -108,7 +130,7 @@ fun NoteEditorSheet(
                             base.copy(
                                 title = title,
                                 content = content,
-                                category = category,
+                                categories = selectedCategories.toList(),
                                 color = color,
                                 isPinned = isPinned,
                                 timestamp = now
@@ -119,7 +141,7 @@ fun NoteEditorSheet(
                                 title = title,
                                 content = content,
                                 color = color,
-                                category = category,
+                                categories = selectedCategories.toList(),
                                 isPinned = isPinned,
                                 isArchived = false,
                                 isDeleted = false,

@@ -9,7 +9,7 @@ data class Note(
     val title: String,
     val content: String,
     val color: String,
-    val category: String,
+    val categories: List<String> = emptyList(),
     val isPinned: Boolean = false,
     val isArchived: Boolean = false,
     val isDeleted: Boolean = false,

@@ -32,7 +32,8 @@ fun NoteEditorScreen(
 
     var title by rememberSaveable(noteId) { mutableStateOf("") }
     var content by rememberSaveable(noteId) { mutableStateOf("") }
-    var category by rememberSaveable(noteId) { mutableStateOf("") }
+    val selectedCategories = remember(noteId) { mutableStateListOf<String>() }
+    var newCategory by rememberSaveable(noteId) { mutableStateOf("") }
     var isPinned by rememberSaveable(noteId) { mutableStateOf(false) }
     var colorHex by rememberSaveable(noteId) { mutableStateOf("#FFCC00") }
 
@@ -44,7 +45,7 @@ fun NoteEditorScreen(
             if (noteId != null && ln != null) {
                 title = ln.title
                 content = ln.content
-                category = ln.category
+                selectedCategories.clear(); selectedCategories.addAll(ln.categories)
                 isPinned = ln.isPinned
                 colorHex = ln.color
             }
@@ -52,17 +53,21 @@ fun NoteEditorScreen(
         }
     }
 
-    // isDirty cobre nova nota e edição
-    val isDirty by remember(title, content, category, isPinned, colorHex, loadedNote, noteId) {
+    fun listsDiffer(a: List<String>, b: List<String>): Boolean {
+        if (a.size != b.size) return true
+        return a.sorted() != b.sorted()
+    }
+
+    val isDirty by remember(title, content, selectedCategories.toList(), isPinned, colorHex, loadedNote, noteId) {
         mutableStateOf(
             if (noteId == null) {
-                title.isNotBlank() || content.isNotBlank() || category.isNotBlank() || isPinned || colorHex != "#FFCC00"
+                title.isNotBlank() || content.isNotBlank() || selectedCategories.isNotEmpty() || isPinned || colorHex != "#FFCC00"
             } else {
                 val ln = loadedNote
                 ln != null && (
                     title != ln.title ||
                         content != ln.content ||
-                        category != ln.category ||
+                        listsDiffer(selectedCategories, ln.categories) ||
                         isPinned != ln.isPinned ||
                         !colorHex.equals(ln.color, ignoreCase = true)
                 )
@@ -97,7 +102,7 @@ fun NoteEditorScreen(
                             base.copy(
                                 title = title,
                                 content = content,
-                                category = category,
+                                categories = selectedCategories.toList(),
                                 color = colorHex,
                                 isPinned = isPinned,
                                 timestamp = now
@@ -108,7 +113,7 @@ fun NoteEditorScreen(
                                 title = title,
                                 content = content,
                                 color = colorHex,
-                                category = category,
+                                categories = selectedCategories.toList(),
                                 isPinned = isPinned,
                                 isArchived = false,
                                 isDeleted = false,
@@ -146,12 +151,28 @@ fun NoteEditorScreen(
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 5
             )
-            OutlinedTextField(
-                value = category,
-                onValueChange = { category = it },
-                label = { Text("Categoria") },
-                modifier = Modifier.fillMaxWidth()
+
+            // Categorias (múltipla seleção)
+            Text("Categorias", style = MaterialTheme.typography.titleMedium)
+            FlowRowCategories(
+                selected = selectedCategories,
+                onRemove = { selectedCategories.remove(it) }
             )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = newCategory,
+                    onValueChange = { newCategory = it },
+                    label = { Text("Nova categoria") },
+                    modifier = Modifier.weight(1f)
+                )
+                Button(enabled = newCategory.isNotBlank(), onClick = {
+                    val c = newCategory.trim()
+                    if (c.isNotEmpty() && !selectedCategories.any { it.equals(c, true) }) {
+                        selectedCategories.add(c)
+                        newCategory = ""
+                    }
+                }) { Text("Adicionar") }
+            }
 
             Text("Cor", style = MaterialTheme.typography.titleMedium)
             androidx.compose.foundation.layout.FlowRow {
@@ -204,6 +225,23 @@ fun NoteEditorScreen(
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun FlowRowCategories(
+    selected: List<String>,
+    onRemove: (String) -> Unit
+) {
+    androidx.compose.foundation.layout.FlowRow {
+        selected.forEach { c ->
+            FilterChip(
+                selected = true,
+                onClick = { onRemove(c) },
+                label = { Text(c) }
+            )
+            Spacer(Modifier.width(8.dp))
+        }
     }
 }
 
