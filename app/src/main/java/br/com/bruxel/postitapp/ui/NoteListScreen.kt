@@ -26,47 +26,57 @@ fun NoteListScreen(
         contentPadding = PaddingValues(top = 8.dp, bottom = 8.dp)
     ) {
         items(notes) { note ->
-            Card(
-                modifier = Modifier
-                    .padding(vertical = 4.dp)
-                    .fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(4.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(text = note.title, style = MaterialTheme.typography.titleLarge)
-                        Text(text = note.content, style = MaterialTheme.typography.bodyMedium)
-                        Text(text = note.id.toString(), style = MaterialTheme.typography.bodyMedium)
+            NoteCard(
+                note = note,
+                onArchive = onArchive,
+                onDelete = onDelete,
+                onRestore = onRestore
+            )
+        }
+    }
+}
+
+@Composable
+fun NoteCard(
+    note: Note,
+    onArchive: ((Note) -> Unit)? = null,
+    onDelete: ((Note) -> Unit)? = null,
+    onRestore: ((Note) -> Unit)? = null
+) {
+    Card(
+        modifier = Modifier
+            .padding(vertical = 4.dp, horizontal = 8.dp)
+            .fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = note.title, style = MaterialTheme.typography.titleLarge)
+                Text(text = note.content, style = MaterialTheme.typography.bodyMedium)
+                Text(text = "ID: ${note.id}", style = MaterialTheme.typography.bodySmall)
+            }
+            Row {
+                if (onArchive != null) {
+                    IconButton(onClick = { onArchive(note) }) {
+                        Icon(
+                            imageVector = if (note.isArchived) Icons.Default.Unarchive else Icons.Default.Archive,
+                            contentDescription = if (note.isArchived) "Desarquivar nota" else "Arquivar nota"
+                        )
                     }
-
-                    Row {
-                        when {
-                            onArchive != null -> {
-                                IconButton(onClick = { onArchive(note) }) {
-                                    Icon(
-                                        imageVector = if (note.isArchived) Icons.Default.Unarchive else Icons.Default.Archive,
-                                        contentDescription = "Arquivar"
-                                    )
-                                }
-                            }
-
-                            onRestore != null -> {
-                                IconButton(onClick = { onRestore(note) }) {
-                                    Icon(Icons.Default.Restore, contentDescription = "Restaurar")
-                                }
-                            }
-                        }
-
-                        if (onDelete != null) {
-                            IconButton(onClick = { onDelete(note) }) {
-                                Icon(Icons.Default.Delete, contentDescription = "Deletar")
-                            }
-                        }
+                }
+                if (onRestore != null) {
+                    IconButton(onClick = { onRestore(note) }) {
+                        Icon(Icons.Default.Restore, contentDescription = "Restaurar nota")
+                    }
+                }
+                if (onDelete != null) {
+                    IconButton(onClick = { onDelete(note) }) {
+                        Icon(Icons.Default.Delete, contentDescription = "Deletar nota")
                     }
                 }
             }

@@ -2,7 +2,6 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
-    id("kotlin-kapt") // Para Room Database
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
 }
@@ -25,8 +24,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
     }
 
     buildFeatures {
@@ -45,12 +46,11 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx.v1170)
     implementation(libs.androidx.appcompat.v161)
     implementation(libs.material.v1100)
 
-    val composeBom = platform("androidx.compose:compose-bom:2024.05.00")
+    val composeBom = platform("androidx.compose:compose-bom:2025.07.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
 
@@ -69,7 +69,7 @@ dependencies {
     implementation(libs.androidx.room.paging)
 
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.androidx.work.runtime.ktx)

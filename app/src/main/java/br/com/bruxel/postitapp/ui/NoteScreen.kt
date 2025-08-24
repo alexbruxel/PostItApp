@@ -1,18 +1,16 @@
 package br.com.bruxel.postitapp.ui
 
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelProvider
 import br.com.bruxel.postitapp.model.Note
 import br.com.bruxel.postitapp.viewmodel.NoteViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun NoteScreen(viewModel: NoteViewModel = ViewModelProvider(LocalContext.current as ComponentActivity)[NoteViewModel::class.java]) {
+fun NoteScreen(viewModel: NoteViewModel = hiltViewModel()) {
     val activeNotes by viewModel.activeNotes.collectAsState(initial = emptyList())
     val archivedNotes by viewModel.archivedNotes.collectAsState(initial = emptyList())
     val deletedNotes by viewModel.deletedNotes.collectAsState(initial = emptyList())
@@ -21,7 +19,7 @@ fun NoteScreen(viewModel: NoteViewModel = ViewModelProvider(LocalContext.current
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
 
         Button(onClick = {
-            viewModel.addNote(
+            viewModel.insertNote(
                 Note(
                     title = "Nova Nota",
                     content = "Conteúdo",

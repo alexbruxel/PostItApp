@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="br.com.bruxel.postitapp">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Permissões necessárias -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application
+        android:name=".PostItApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -17,19 +17,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.PostItApp"
-        tools:targetApi="31"
-        >
-        <!-- Habilita Hilt para injeção de dependências -->
-        <meta-data
-            android:name="dagger.hilt.android.internal.modules.ApplicationContextModule"
-            android:value="true" />
+        tools:targetApi="31">
 
         <!-- Atividade principal -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.PostItApp">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

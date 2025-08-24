@@ -5,27 +5,48 @@ import androidx.lifecycle.viewModelScope
 import br.com.bruxel.postitapp.model.Note
 import br.com.bruxel.postitapp.repository.NoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class NoteViewModel @Inject constructor(private val repo: NoteRepository) : ViewModel() {
-    val activeNotes = repo.activeNotes
-    val archivedNotes = repo.archivedNotes
-    val deletedNotes = repo.deletedNotes
+    /**
+     * Notas ativas, arquivadas e deletadas expostas como StateFlow para consumo reativo na UI.
+     */
+    val activeNotes: StateFlow<List<Note>> = repo.activeNotes
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val archivedNotes: StateFlow<List<Note>> = repo.archivedNotes
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val deletedNotes: StateFlow<List<Note>> = repo.deletedNotes
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun addNote(note: Note) = viewModelScope.launch {
+    /**
+     * Insere uma nova nota no banco de dados.
+     */
+    fun insertNote(note: Note) = viewModelScope.launch {
         repo.insert(note)
     }
 
+    /**
+     * Alterna o status de arquivamento da nota.
+     */
     fun toggleArchive(note: Note) = viewModelScope.launch {
         repo.toggleArchive(note)
     }
 
+    /**
+     * Marca a nota como deletada.
+     */
     fun deleteNote(note: Note) = viewModelScope.launch {
         repo.delete(note)
     }
 
+    /**
+     * Restaura uma nota deletada.
+     */
     fun restoreNote(note: Note) = viewModelScope.launch {
         repo.restore(note)
     }
