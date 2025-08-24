@@ -12,7 +12,8 @@ android {
 
     defaultConfig {
         applicationId = "br.com.bruxel.postitapp"
-        minSdk = 26
+        minSdk = 35
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 

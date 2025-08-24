@@ -12,7 +12,9 @@ import br.com.bruxel.postitapp.viewmodel.NoteViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NoteHomeScreen(
     viewModel: NoteViewModel,

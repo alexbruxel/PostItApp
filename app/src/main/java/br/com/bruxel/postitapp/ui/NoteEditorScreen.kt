@@ -18,17 +18,21 @@ import androidx.compose.ui.unit.dp
 import br.com.bruxel.postitapp.model.Note
 import br.com.bruxel.postitapp.viewmodel.NoteViewModel
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun NoteEditorScreen(
     noteId: Int?,
     viewModel: NoteViewModel,
     onNavigateUp: () -> Unit
 ) {
-    val loadedNote by (noteId?.let { viewModel.getNote(it).collectAsState() } ?: remember { mutableStateOf<Note?>(null) })
+    val loadedNote by (noteId?.let { viewModel.getNote(it).collectAsState(initial = null) }
+        ?: remember { mutableStateOf<Note?>(null) })
 
-    var initialized by remember(noteId, loadedNote) { mutableStateOf(false) }
+    // Nota original carregada (Flow ou fallback) para preservar id/flags
+    var originalNote by remember(noteId) { mutableStateOf<Note?>(null) }
+    var appliedLoaded by remember(noteId) { mutableStateOf(false) }
 
     var title by rememberSaveable(noteId) { mutableStateOf("") }
     var content by rememberSaveable(noteId) { mutableStateOf("") }
@@ -51,17 +55,27 @@ fun NoteEditorScreen(
 
     var titleError by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(loadedNote, noteId) {
-        if (!initialized) {
-            val ln = loadedNote
-            if (noteId != null && ln != null) {
-                title = ln.title
-                content = ln.content
-                selectedCategories.clear(); selectedCategories.addAll(ln.categories)
-                isPinned = ln.isPinned
-                colorHex = ln.color
+    LaunchedEffect(noteId, loadedNote) {
+        val ln = loadedNote
+        if (noteId != null && ln != null && !appliedLoaded) {
+            originalNote = ln
+            title = ln.title
+            content = ln.content
+            selectedCategories.clear(); selectedCategories.addAll(ln.categories)
+            isPinned = ln.isPinned
+            colorHex = ln.color
+            appliedLoaded = true
+        } else if (noteId != null && ln == null && !appliedLoaded) {
+            val immediate = viewModel.getNoteImmediate(noteId)
+            if (immediate != null) {
+                originalNote = immediate
+                title = immediate.title
+                content = immediate.content
+                selectedCategories.clear(); selectedCategories.addAll(immediate.categories)
+                isPinned = immediate.isPinned
+                colorHex = immediate.color
+                appliedLoaded = true
             }
-            initialized = true
         }
     }
 
@@ -70,18 +84,18 @@ fun NoteEditorScreen(
         return a.sorted() != b.sorted()
     }
 
-    val isDirty by remember(title, content, selectedCategories.toList(), isPinned, colorHex, loadedNote, noteId) {
+    val isDirty by remember(title, content, selectedCategories.toList(), isPinned, colorHex, originalNote, noteId) {
         mutableStateOf(
             if (noteId == null) {
                 title.isNotBlank() || content.isNotBlank() || selectedCategories.isNotEmpty() || isPinned || colorHex != "#FFCC00"
             } else {
-                val ln = loadedNote
-                ln != null && (
-                    title != ln.title ||
-                        content != ln.content ||
-                        listsDiffer(selectedCategories, ln.categories) ||
-                        isPinned != ln.isPinned ||
-                        !colorHex.equals(ln.color, ignoreCase = true)
+                val base = originalNote
+                base != null && (
+                    title != base.title ||
+                        content != base.content ||
+                        listsDiffer(selectedCategories, base.categories) ||
+                        isPinned != base.isPinned ||
+                        !colorHex.equals(base.color, ignoreCase = true)
                 )
             }
         )
@@ -94,11 +108,20 @@ fun NoteEditorScreen(
     }
 
     val canSave = title.isNotBlank() || content.isNotBlank()
+    val canCommit = (noteId == null || appliedLoaded) && canSave
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (noteId == null) "Nova Nota" else "Editar Nota") },
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(if (noteId == null) "Nova Nota" else "Editar Nota")
+                        if (noteId != null && !appliedLoaded) {
+                            Spacer(Modifier.width(8.dp))
+                            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                        }
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = { if (isDirty) showExitConfirm = true else onNavigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
@@ -107,9 +130,9 @@ fun NoteEditorScreen(
                 actions = {
                     TextButton(onClick = {
                         titleError = if (title.isBlank() && content.isBlank()) "Título ou conteúdo obrigatório" else null
-                        if (!canSave) return@TextButton
+                        if (!canCommit) return@TextButton
                         val now = System.currentTimeMillis()
-                        val base = loadedNote
+                        val base = originalNote
                         val toSave = if (base != null) {
                             base.copy(
                                 title = title,
@@ -134,7 +157,7 @@ fun NoteEditorScreen(
                         }
                         viewModel.saveNote(toSave)
                         onNavigateUp()
-                    }, enabled = canSave) {
+                    }, enabled = canCommit) {
                         Text("Salvar")
                     }
                 }

@@ -16,6 +16,7 @@ class NoteRepository @Inject constructor(private val dao: NoteDao) {
     suspend fun restore(note: Note) = dao.setDeleted(note.id, false)
 
     fun getNoteById(id: Int): Flow<Note?> = dao.getNoteById(id)
+    suspend fun getNoteImmediate(id: Int): Note? = dao.getNoteImmediate(id)
 
     suspend fun save(note: Note) = dao.saveNote(note)
     suspend fun insert(note: Note) = dao.insert(note)

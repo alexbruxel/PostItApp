@@ -55,6 +55,8 @@ class NoteViewModel @Inject constructor(private val repo: NoteRepository) : View
     fun getNote(noteId: Int): StateFlow<Note?> = repo.getNoteById(noteId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    suspend fun getNoteImmediate(noteId: Int): Note? = repo.getNoteImmediate(noteId)
+
     fun saveNote(note: Note) = viewModelScope.launch {
         if (note.id == 0) repo.insert(note) else repo.update(note)
     }
@@ -71,7 +73,8 @@ class NoteViewModel @Inject constructor(private val repo: NoteRepository) : View
                     }
                 }
             }
-            seen.values.sortedWith(String.CASE_INSENSITIVE_ORDER)
+            // Mantém a ordem de primeira ocorrência conforme gravada
+            seen.values.toList()
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 }
