@@ -13,6 +13,7 @@ roomKtx = "2.7.2"
 roomPaging = "2.7.2"
 roomRuntime = "2.7.2"
 workRuntimeKtx = "2.10.3"
+navigationCompose = "2.8.4"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
@@ -35,4 +36,4 @@ gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltCompiler" }
 material-v1100 = { module = "com.google.android.material:material", version.ref = "materialVersion" }
-
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
